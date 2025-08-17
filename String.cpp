@@ -115,7 +115,7 @@ String& String::operator+=(const char* other)
 
 String& String::operator+=( String&& other)
 {
-    create_data(other.m_data , other.m_length);
+    update_data(other.m_data , other.m_length);
 
     // Очищаем other от данных
     other.m_data = nullptr;
@@ -142,7 +142,8 @@ void String::update_data( const char *data , std::size_t length )
     this->m_length += length;
 }
 
-int8_t String::comparison_no_reg(const String& left , const String& right)
+
+bool String::is_more(const String& left , const String& right)
 {
     std::size_t pos = 0;
 
@@ -152,23 +153,46 @@ int8_t String::comparison_no_reg(const String& left , const String& right)
     const char* left_data = left.m_data;
     const char* right_data = right.m_data;
 
-    while (pos < left_length && pos < right_length)
+    while ( pos < left_length && pos < right_length)
     {
         // Приводим к unsigned char, чтобы избежать неопределенного поведения
-        const char c_left = std::tolower(static_cast<unsigned char>(left_data[pos]));
-        const char c_right = std::tolower(static_cast<unsigned char>(right_data[pos]));
+        const unsigned char c_left = std::tolower(static_cast<unsigned char>(left_data[pos]));
+        const unsigned char c_right = std::tolower(static_cast<unsigned char>(right_data[pos]));
 
-        if (c_left != c_right) return (c_left < c_right) ? 0 : 1;
+        if ( c_left > c_right) return true;
+        if ( c_left < c_right) return false;
+        ++pos;
+    }
+    return left_length > right_length;
+}
+
+bool String::is_equal(const String& left , const String& right)
+{
+    std::size_t pos = 0;
+
+    const std::size_t left_length = left.m_length;
+    const std::size_t right_length = right.m_length;
+
+    const char* left_data = left.m_data;
+    const char* right_data = right.m_data;
+
+    while ( pos < left_length && pos < right_length)
+    {
+        // Приводим к unsigned char, чтобы избежать неопределенного поведения
+        const unsigned char c_left = std::tolower(static_cast<unsigned char>(left_data[pos]));
+        const unsigned char c_right = std::tolower(static_cast<unsigned char>(right_data[pos]));
+        if (c_left != c_right) return false;
+
         ++pos;
     }
 
-    if (left_length == right_length) return 2;
-    return (left_length < right_length) ? 0 : 1;
+    return true;
 }
 
 bool String::operator==(const String& other) const
 {
-    return comparison_no_reg(*this , other) == 2;
+    // return comparison_no_reg(*this , other) == 2;
+    return is_equal(*this , other);
 }
 bool String::operator!=(const String& other) const
 {
@@ -177,16 +201,18 @@ bool String::operator!=(const String& other) const
 }
 bool String::operator>(const String& other) const
 {
-    return comparison_no_reg(*this , other) != 0;
+    // return comparison_no_reg(*this , other) != 0;
+    return is_more(*this , other);
 }
 bool String::operator>=(const String& other) const
 {
     // >= обратно <, поэтому ставим отрицание
-    return !(*this < other);
+    return (*this > other) || (*this == other);
 }
 bool String::operator<(const String& other) const
 {
-    return comparison_no_reg(*this , other) == 0;
+    // return comparison_no_reg(*this , other) == 0;
+    return !(*this >= other);
 }
 bool String::operator<=(const String& other) const
 {
@@ -195,7 +221,8 @@ bool String::operator<=(const String& other) const
 }
 bool String::operator==(const char* other) const
 {
-    return comparison_no_reg(*this , String(other)) == 2;
+    // return comparison_no_reg(*this , String(other)) == 2;
+    return is_equal(*this , String(other));
 }
 bool String::operator!=(const char* other) const
 {
@@ -204,16 +231,19 @@ bool String::operator!=(const char* other) const
 }
 bool String::operator>(const char* other) const
 {
-    return comparison_no_reg(*this , String(other)) != 0;
+    // return comparison_no_reg(*this , String(other)) != 0;
+    return is_more(*this , String(other));
 }
 bool String::operator>=(const char* other) const
 {
     // >= обратно <, поэтому ставим отрицание
-    return !(*this < String(other));
+    // return !(*this < String(other));
+    return (*this > String(other)) || (*this == String(other));
 }
 bool String::operator<(const char* other) const
 {
-    return comparison_no_reg(*this , String(other)) == 0;
+    // return comparison_no_reg(*this , String(other)) == 0;
+    return !(*this >= String(other));
 }
 bool String::operator<=(const char* other) const
 {

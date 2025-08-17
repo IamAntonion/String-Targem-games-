@@ -24,9 +24,6 @@ public:
     // В деструкторе освобождаем память для m_data
     ~String();
 
-    // Сортируем в обратном лексикографическому порядке без учета регистра
-    static int8_t comparison_no_reg(const String& left , const String& right);
-
     // Возвращаем длину строки
     std::size_t     length() { return m_length; }
 
@@ -105,6 +102,9 @@ private:
     void update_data( const char *data , std::size_t length );
     void reload_data( const char *data , std::size_t length );
     void create_data( const char *data , std::size_t length );
+
+    static bool is_more(const String& left , const String& right);
+    static bool is_equal(const String& left , const String& right);
 };
 
 }
